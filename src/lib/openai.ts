@@ -17,7 +17,7 @@ export async function generateCoverVariants(
   input: GenerateCoverRequest,
 ) {
   const prompt = buildCoverPrompt(input);
-  const model = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
+  const model = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-2";
   const quality = process.env.OPENAI_IMAGE_QUALITY ?? "high";
 
   const response = await client.images.generate({

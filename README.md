@@ -4,11 +4,11 @@
 
 Cover4EBook is an AI ebook cover studio for books, web novels, and story drafts that do not already have a cover. Paste a passage, describe the mood, or write a direct prompt, generate multiple cover concepts, refine title and author typography in the browser, and export the final design as `png`, `jpg`, `webp`, or `pdf`.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-black?logo=nextdotjs)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![OpenAI Images](https://img.shields.io/badge/OpenAI-Image_Generation-10a37f?logo=openai&logoColor=white)](https://platform.openai.com/)
 [![Status](https://img.shields.io/badge/Status-Active_Prototype-cb6e17)](#roadmap)
-[![License](https://img.shields.io/badge/License-Unspecified-lightgrey)](#license)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ![Cover4EBook hero showing prompt-based cover generation and in-browser editing](assets/readme/hero.png)
 
@@ -43,7 +43,7 @@ Cover4EBook closes that gap with a focused workflow: prompt for mood, generate s
 | --- | --- | --- |
 | ![The Secret Garden vintage illustrated children's book cover](assets/readme/gallery-1.png) | ![The Secret Garden cinematic mysterious garden poster cover](assets/readme/gallery-2.png) | ![The Secret Garden elegant literary paperback cover](assets/readme/gallery-3.png) |
 
-These covers are static README artwork generated with Codex's built-in image generation tool. The tool does not expose its underlying model identifier, and the images do not represent API calls made by the Cover4EBook application.
+These covers are static README demo assets created for visual presentation. They are not generated at runtime and do not represent live API calls made by the Cover4EBook application.
 
 ![Editor screenshot showing text editing and layout controls](assets/readme/editor.png)
 
@@ -93,7 +93,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Variable | Required | Default | Purpose |
 | --- | --- | --- | --- |
 | `OPENAI_API_KEY` | Yes for AI generation | None | Server-side OpenAI API key used for image generation |
-| `OPENAI_IMAGE_MODEL` | No | `gpt-image-1` | Override the image model |
+| `OPENAI_IMAGE_MODEL` | No | `gpt-image-2` | Override the image model |
 | `OPENAI_IMAGE_QUALITY` | No | `high` | Override requested image quality |
 | `COVER4EBOOK_ACCEPTANCE_MOCK` | No | `0` | Enables mock image generation for acceptance testing |
 
@@ -175,4 +175,4 @@ Screenshots are written to `output/playwright/screenshots/`.
 
 ## License
 
-No `LICENSE` file is committed in the repository yet, so the project is currently license-unspecified. Add the intended open source license before public distribution.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
