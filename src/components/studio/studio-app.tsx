@@ -9,6 +9,7 @@ import {
   getFontStack,
   layoutPresets,
 } from "@/lib/art-direction";
+import { STUDIO_COVER_HEIGHT, STUDIO_COVER_WIDTH } from "@/lib/cover-stage";
 import { renderCoverBlob } from "@/lib/export-cover";
 import { saveBlobToUserFile } from "@/lib/file-save";
 import {
@@ -53,12 +54,14 @@ function PreviewStage({
 }: {
   project: CoverProject;
   selectedVariant: CoverVariant | null;
-  selectedLayerKey: TextLayerKey;
-  onSelectLayer: (key: TextLayerKey) => void;
+  selectedLayerKey: TextLayerKey | null;
+  onSelectLayer: (key: TextLayerKey | null) => void;
   onMoveLayer: (key: TextLayerKey, x: number, y: number) => void;
   onResizeLayer: (key: TextLayerKey, width: number, fontSize: number) => void;
 }) {
+  const stageShellRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const [previewScale, setPreviewScale] = useState(1);
   const [dragState, setDragState] = useState<{
     mode: "move" | "resize";
     key: TextLayerKey;
@@ -118,6 +121,25 @@ function PreviewStage({
     };
   }, [dragState, onMoveLayer, onResizeLayer, project.textLayers]);
 
+  useEffect(() => {
+    const shell = stageShellRef.current;
+    if (!shell) {
+      return;
+    }
+    const shellElement = shell;
+
+    function updateScale() {
+      const nextScale = shellElement.getBoundingClientRect().width / STUDIO_COVER_WIDTH;
+      setPreviewScale(Number.isFinite(nextScale) && nextScale > 0 ? nextScale : 1);
+    }
+
+    updateScale();
+
+    const observer = new ResizeObserver(() => updateScale());
+    observer.observe(shellElement);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="preview-shell">
       <div className="preview-toolbar">
@@ -125,71 +147,64 @@ function PreviewStage({
         <span className="preview-toolbar-sep" />
         <span className="preview-toolbar-chip">Drag title and author directly</span>
       </div>
-      <div className="preview-stage" ref={stageRef} data-testid="preview-stage">
-        <div className="sr-only" data-testid="preview-stage-state">
-          {selectedVariant ? "preview-ready" : "preview-empty"}
-        </div>
         <div
-          className={clsx("preview-art", !selectedVariant && "preview-art-placeholder")}
-          style={selectedVariant ? { backgroundImage: `url(${selectedVariant.imageDataUrl})` } : undefined}
-        />
-        {(["title", "author"] as const).map((key) => {
-          const layer = project.textLayers[key];
-          const isSelected = selectedLayerKey === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              data-testid={key === "title" ? "preview-title-layer" : "preview-author-layer"}
-              className={clsx("preview-layer", isSelected && "preview-layer-selected")}
-              style={{
-                left: `${layer.x * 100}%`,
-                top: `${layer.y * 100}%`,
-                width: `${layer.width * 100}%`,
-                color: layer.color,
-                fontFamily: getFontStack(layer.fontFamily),
-                fontSize: `${layer.fontSize}px`,
-                fontWeight: layer.fontWeight,
-                letterSpacing: `${layer.letterSpacing}px`,
-                lineHeight: layer.lineHeight,
-                textAlign: layer.align,
-                textTransform: layer.uppercase ? "uppercase" : "none",
-              }}
-              onClick={() => onSelectLayer(key)}
-              onPointerDown={(event) => {
-                const stage = stageRef.current;
-                if (!stage) {
-                  return;
-                }
-                onSelectLayer(key);
-                setDragState({
-                  mode: "move",
-                  key,
-                  pointerId: event.pointerId,
-                  originX: layer.x,
-                  originY: layer.y,
-                  originWidth: layer.width,
-                  originFontSize: layer.fontSize,
-                  startClientX: event.clientX,
-                  startClientY: event.clientY,
-                  stageWidth: stage.getBoundingClientRect().width,
-                  stageHeight: stage.getBoundingClientRect().height,
-                });
-              }}
-            >
-              {layer.text || (key === "title" ? "Your Title" : "Author Name")}
-              {isSelected ? (
-                <span
-                  className="preview-resize-handle"
-                  data-testid={key === "title" ? "preview-title-resize" : "preview-author-resize"}
+          className="preview-stage-shell"
+          ref={stageShellRef}
+          data-testid="preview-stage"
+        >
+          <div className="sr-only" data-testid="preview-stage-state">
+            {selectedVariant ? "preview-ready" : "preview-empty"}
+          </div>
+          <div
+            className="preview-stage"
+            ref={stageRef}
+            style={{
+              width: `${STUDIO_COVER_WIDTH}px`,
+              height: `${STUDIO_COVER_HEIGHT}px`,
+              transform: `scale(${previewScale})`,
+            }}
+            onPointerDown={(event) => {
+              if (event.target === event.currentTarget) {
+                onSelectLayer(null);
+              }
+            }}
+          >
+            <div
+              className={clsx("preview-art", !selectedVariant && "preview-art-placeholder")}
+              style={selectedVariant ? { backgroundImage: `url(${selectedVariant.imageDataUrl})` } : undefined}
+              onPointerDown={() => onSelectLayer(null)}
+            />
+            {(["title", "author"] as const).map((key) => {
+              const layer = project.textLayers[key];
+              const isSelected = selectedLayerKey === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  data-testid={key === "title" ? "preview-title-layer" : "preview-author-layer"}
+                  className={clsx("preview-layer", isSelected && "preview-layer-selected")}
+                  style={{
+                    left: `${layer.x * 100}%`,
+                    top: `${layer.y * 100}%`,
+                    width: `${layer.width * 100}%`,
+                    color: layer.color,
+                    fontFamily: getFontStack(layer.fontFamily),
+                    fontSize: `${layer.fontSize}px`,
+                    fontWeight: layer.fontWeight,
+                    letterSpacing: `${layer.letterSpacing}px`,
+                    lineHeight: layer.lineHeight,
+                    textAlign: layer.align,
+                    textTransform: layer.uppercase ? "uppercase" : "none",
+                  }}
+                  onClick={() => onSelectLayer(key)}
                   onPointerDown={(event) => {
-                    event.stopPropagation();
                     const stage = stageRef.current;
                     if (!stage) {
                       return;
                     }
+                    onSelectLayer(key);
                     setDragState({
-                      mode: "resize",
+                      mode: "move",
                       key,
                       pointerId: event.pointerId,
                       originX: layer.x,
@@ -202,20 +217,47 @@ function PreviewStage({
                       stageHeight: stage.getBoundingClientRect().height,
                     });
                   }}
-                />
-              ) : null}
-            </button>
-          );
-        })}
+                >
+                  {layer.text || (key === "title" ? "Your Title" : "Author Name")}
+                  {isSelected ? (
+                    <span
+                      className="preview-resize-handle"
+                      data-testid={key === "title" ? "preview-title-resize" : "preview-author-resize"}
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                        const stage = stageRef.current;
+                        if (!stage) {
+                          return;
+                        }
+                        setDragState({
+                          mode: "resize",
+                          key,
+                          pointerId: event.pointerId,
+                          originX: layer.x,
+                          originY: layer.y,
+                          originWidth: layer.width,
+                          originFontSize: layer.fontSize,
+                          startClientX: event.clientX,
+                          startClientY: event.clientY,
+                          stageWidth: stage.getBoundingClientRect().width,
+                          stageHeight: stage.getBoundingClientRect().height,
+                        });
+                      }}
+                    />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
-    </div>
   );
 }
 
 export function StudioApp() {
   const [projects, setProjects] = useState<CoverProject[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [selectedLayerKey, setSelectedLayerKey] = useState<TextLayerKey>("title");
+  const [selectedLayerKey, setSelectedLayerKey] = useState<TextLayerKey | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -307,7 +349,7 @@ export function StudioApp() {
     });
     setProjects((current) => [freshProject, ...current]);
     startTransition(() => setActiveProjectId(freshProject.id));
-    setSelectedLayerKey("title");
+    setSelectedLayerKey(null);
     setStatusMessage("Created a new local draft.");
     void saveProject(freshProject);
   }

@@ -489,13 +489,18 @@ button {
   font-size: 0.92rem;
 }
 
-.preview-stage {
+.preview-stage-shell {
   position: relative;
   aspect-ratio: 2 / 3;
   border-radius: 28px;
   overflow: hidden;
   background: #0e0f0c;
   box-shadow: 0 24px 80px rgba(17, 16, 12, 0.28);
+}
+
+.preview-stage {
+  position: relative;
+  transform-origin: top left;
 }
 
 .sr-only {
